@@ -1,0 +1,69 @@
+# any given strings are first checked to see
+# if they only contain characters in the alphabet
+alphabet: ab
+
+# error states are not needed as we assume
+# attempting an undefined transition means
+# that the string is not accepted
+states:
+  - q0
+  - q1
+  - q2
+  - q3
+
+# initial should only be a single state,
+# usually q0 or Start
+initial: q0
+
+# since end states abort early, the values in
+# this array should never have any handlers
+# in the `transitions` key
+end:
+  - q1
+
+# final states can have transitions and a valid
+# word in the alphabet should end on this state
+final:
+  - q3
+
+transitions:
+  # Each transition is keyed by its start and contains
+  # one of the following:
+  #
+  #   - A key value pair of character: destination
+  #   - A key value pair of:
+  #     
+  #       character:
+  #         if:
+  #           stack value 1:
+  #             # values to push onto th stack in order
+  #             # defaults to an empty array
+  #             push:
+  #               - push val 1
+  #               - push val 2
+  #             # number of values to pop off the stack
+  #             # defaults to 0
+  #             pop: 1
+  #             to: destintation
+  #           stack value 2:
+  #             # ...
+  #         else: destintation
+  q0:
+    a: q2
+    b: q1
+  q2:
+    a: q3
+    b: q2
+  q3:
+    a: q3
+    b: q2
+
+# The initial state of the stack.
+#
+# Note that the values are pushed onto the stack
+# in the order provided, so 3 will be on top when
+# the automaton starts
+stack:
+  # - 1
+  # - 2
+  # - 3

@@ -54,6 +54,10 @@ class PushdownAutomata:
             print(f"Could not find required value {e}")
 
     def run(self, word: str):
+        for alpha in list(word):
+            if alpha not in self.alphabet:
+                print(f"'{word}' has character not in alphabet '{self.alphabet}': {alpha}")
+                return
         self.current = self.initial
         print(f"Testing word: {word}")
         self.word = word
@@ -62,7 +66,7 @@ class PushdownAutomata:
             self.transition()
 
         if self.current in self.final:
-            print(f"'{word}' is accepted by given automata\n")
+            print(f"'{word}' is accepted\n")
         else:
             print(
                 f"""\

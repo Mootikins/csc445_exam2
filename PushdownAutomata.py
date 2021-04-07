@@ -65,7 +65,8 @@ class PushdownAutomata:
             print(f"'{word}' is accepted by given automata\n")
         else:
             print(
-                f"""'{word}' is not accepted
+                f"""\
+'{word}' is not accepted
 \tCurrent state: {self.current}
 \tRemaining text: {self.word}\n"""
             )
@@ -78,8 +79,10 @@ class PushdownAutomata:
             return
 
         transition_info = transition.get(char)
+        # direct transition
         if type(transition_info) is str:
             self.current = transition_info
+        # we have stack-based transitions
         elif type(transition_info) is dict:
             for entry, data in transition_info.items():
                 if len(self.stack) > 0 and self.stack[-1] == entry:
@@ -95,7 +98,8 @@ class PushdownAutomata:
         self.word = self.word[1:]
 
     def __str__(self):
-        return f"""Alphabet: {self.alphabet}
+        return f"""\
+Alphabet: {self.alphabet}
 States: {self.states}
 Initial: {self.initial}
 End: {self.end}

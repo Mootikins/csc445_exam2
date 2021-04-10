@@ -47,7 +47,7 @@ transitions:
   #         # any number of stack values to check
   #         stack value 2:
   #         # ...
-  #       else: destintation
+  #         else: destintation
   q0:
     a: q2
     b: q1

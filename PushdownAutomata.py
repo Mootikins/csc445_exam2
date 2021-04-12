@@ -2,35 +2,35 @@ from typing import Any
 
 
 def valid_transition(transition: dict, valid_states: list[str], alphabet: str) -> bool:
-    for alpha, dest in transition.items():
+    for alpha, dest_info in transition.items():
         if alpha not in list(alphabet):
             print(f"Invalid transition character: {alpha}")
             return False
 
-        if type(dest) is str and dest not in valid_states:
-            print(f"Invalid transition destination: {dest}")
+        if type(dest_info) is str and dest_info not in valid_states:
+            print(f"Destination {dest_info} not in states array")
             return False
-        elif type(dest) is dict:
-            for stack_val, info in dest.items():
-                if stack_val != "else":
-                    for instr, vals in info.items():
-                        if instr not in ["to", "push", "pop"]:
-                            print(f"Invalid conditional stack transition info: {instr}")
-                            return False
-                        if instr == "to" and vals not in valid_states:
-                            print(f"Invalid 'to' state: {vals}")
-                            return False
 
-                elif info not in valid_states:
-                    print(f"Invalid 'else' state: {info}")
-                    return False
+        elif type(dest_info) is dict:
+            if dest_info.get("stack") is not None:
+                for transition_info in dest_info.get("stack").values():
+                    destination = transition_info.get("to")
+                    if destination not in valid_states:
+                        print(f"Destination state {destination} not in states array")
+                        return False
+
+            default_dest = dest_info.get("to")
+            if default_dest is not None and default_dest not in valid_states:
+                print(f"Destination state {repr(default_dest)} not in states array")
+                return False
 
     return True
 
 
 class PushdownAutomata:
-    def __init__(self, definition: dict[str, Any]):
+    def __init__(self, definition: dict[str, Any], debug=False):
         try:
+            self.__debug = debug
             self.__alphabet = definition["alphabet"]
             self.__states = list(set(definition["states"]))
             if len(self.__states) != len(definition["states"]):
@@ -44,13 +44,13 @@ class PushdownAutomata:
             if len(self.__transitions) == 0:
                 raise Exception("'transitions' must not be empty")
 
-            for key, value in self.__transitions.items():
-                if key not in self.__states:
-                    raise Exception(f"'{key}' is not in 'states'")
+            for state, value in self.__transitions.items():
+                if state not in self.__states:
+                    raise Exception(f"'{state}' is not in 'states'")
 
-                if key in self.__end:
+                if state in self.__end:
                     raise Exception(
-                        f"'{key}' is defined as an end state and should not have any transitions"
+                        f"'{state}' is defined as an end state and should not have any transitions"
                     )
 
                 if not valid_transition(value, self.__states, self.__alphabet):
@@ -70,7 +70,8 @@ class PushdownAutomata:
         print(f"Testing word: {word}")
         self.word = word
         while len(self.word) > 0 and self.__current not in self.__end:
-            print(f"Transitioning from {self.__current} via char '{self.word[0]}'")
+            if self.__debug:
+                print(f"Transitioning from {self.__current} via char '{self.word[0]}'")
             self.transition()
 
         if self.__current in self.__final:
@@ -79,9 +80,15 @@ class PushdownAutomata:
             print(
                 f"""\
 '{word}' is not accepted
+"""
+            )
+
+            if self.__debug:
+                print(
+                    """\
 \tCurrent state: {self.__current}
 \tRemaining text: {self.word}\n"""
-            )
+                )
 
     def transition(self):
         char = self.word[0]
@@ -94,25 +101,25 @@ class PushdownAutomata:
         # direct transition
         if type(transition_info) is str:
             self.__current = transition_info
+            # pop the top of the stack
+            self.__stack = self.__stack[:-1]
         # we have stack-based transitions
         elif type(transition_info) is dict:
             using_stack = False
-            for entry, data in transition_info.items():
-                if (
-                    len(self.__stack) > 0
-                    and self.__stack[-1] == entry
-                    and entry != "else"
-                ):
-                    self.__current = data
-                    self.__stack = self.__stack[: -data.get("pop", 0)]
-                    self.__stack.extend(data.get("push", []))
-                    using_stack = True
+            stack_vals = transition_info.get("stack")
+            if stack_vals is not None:
+                for value, transition in stack_vals.items():
+                    if self.__stack[:-1] == value:
+                        self.__stack = self.__stack[: -transition.get("pop") or 1]
+                        self.__stack.extend(transition.get("push") or [])
+                        self.__current = transition.get("to")
+                        using_stack = True
+                        break
 
             if not using_stack:
-                if transition_info.get("else") is None:
-                    self.__current = "error"
-                else:
-                    self.__current = transition_info.get("else")
+                self.__stack = self.__stack[: -transition_info.get("pop") or 1]
+                self.__stack.extend(transition_info.get("push") or [])
+                self.__current = transition_info.get("to")
 
         self.word = self.word[1:]
 

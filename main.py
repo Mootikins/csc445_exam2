@@ -11,7 +11,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-f,--yaml-file",
+        "-f, --yaml",
         required=True,
         type=str,
         dest="input",
@@ -23,6 +23,14 @@ def parse_args():
         nargs="+",
         type=str,
         help="Word(s) to try running through the defined automata",
+    )
+
+    parser.add_argument(
+        "-d, --debug",
+        default=False,
+        action=argparse.BooleanOptionalAction,
+        dest="debug",
+        help="Print debug messages, which includes transitions",
     )
 
     args = parser.parse_args()
@@ -37,9 +45,10 @@ def main():
         except Exception as e:
             print(e)
             exit(1)
-        pda = PushdownAutomata(pda_def)
-        for word in args.word:
-            pda.run(word)
+
+    pda = PushdownAutomata(pda_def, args.debug)
+    for word in args.word:
+        pda.run(word)
 
 
 if __name__ == "__main__":

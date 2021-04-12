@@ -34,23 +34,36 @@ transitions:
   #   - A key value pair of:
   #     
   #       character:
-  #         stack value 1:
-  #           # values to push onto th stack in order
-  #           # defaults to an empty array
-  #           push:
-  #             - push val 1
-  #             - push val 2
-  #           # number of values to pop off the stack
-  #           # defaults to 0
-  #           pop: 1
-  #           to: destintation
-  #         # any number of stack values to check
-  #         stack value 2:
-  #         # ...
-  #         else: destintation
+  #         stack:
+  #           stack value 1:
+  #             # values to push onto th stack in order
+  #             # defaults to an empty array
+  #             push:
+  #               - push val 1
+  #               - push val 2
+  #             # number of values to pop off the stack
+  #             # defaults to 1
+  #             pop: 0
+  #             to: destintation
+  #           # any number of stack values to check
+  #           stack value 2:
+  #           # ...
+  #        # the default definition acts like an else
+  #        push:
+  #        pop: 0 # default is 1
+  #        to: default destination
   q0:
-    a: q2
-    b: q1
+    a: 
+      stack:
+        stack val 1:
+          to: q2
+      push:
+      pop: 0
+      to: q2
+    b:
+      push:
+      pop: 0
+      to: q1
   q2:
     a: q3
     b: q2

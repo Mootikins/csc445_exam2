@@ -33,25 +33,25 @@ The YAML file contains the following main sections:
 - `transitions`: A nested dictionary where each first level key is the starting
   state for any defined transitions from that state.
 
-  Inside this top level key, there can be one of two types of dictionaries:
+  A general transition definition has three parts:
 
-  - Any number of *key*: *value* pairs where *key* is the current character in
-    the alphabet, and *value* is the destination state.
+  - `pop`: The number of values to pop off the stack -- defaults to one (1)
+  - `push`: An array of strings or values to push onto the stack after popping
+  - `to`: The destination state to transition to after stack operations
 
-  - Any number of *key*: *value* pairs where the *key* is a stack value or
-    `else`. The value is another dictionary that will be evaluated as follows if
-    the current value on the stack matches the *key*:
+  The top level (state) key contains any number of nested *key*: *value* pairs,
+  where the key is the character that the transition information (in value) is
+  used.
 
-    - `pop`: An integer saying how many values to pop off the stack.
-    - `push`: An array of strings to push onto the stack *after* popping off of
-      the stack.
-    - `to`: A string specifying which state from the `states` array should be
-      moved to after any stack manipulation.
+  The value mentioned in the previous paragraph can contain up to four keys:
 
-    The `else` key is used to specify which state to transition to if none of
-    the stack values defined in the character's match the current value on the
-    stack. Note that the value of this `else` key is equivalent to the *value*
-    that does not use the stack definitions.
+    - `stack`: Any number of *key*: *value* pairs, where the key is a stack
+      value to transition on, and value is the general transition definition
+      described above (that contains `pop`, `push`, and `to`).
+    - The keys from the general transition definition above. This is used only
+      if none of the transitions in the `stack` key (if present) match the
+      current top of the stack.
+
 - `stack`: The initial state of the stack when the automata starts.
 
 ## Running
@@ -60,15 +60,16 @@ The program takes a minimum of two input parameters, which are described in the
 help text below:
 
 ```
-usage: main.py [-h] -f,--yaml-file INPUT word [word ...]
+usage: main.py [-h] -f, --yaml INPUT [-d, --debug] word [word ...]
 
 A basic YAML-defined pushdown automata
 
 positional arguments:
-  word                  Word(s) to try running through the defined
-                        automata
+  word              Word(s) to try running through the defined automata
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -f,--yaml-file INPUT  The YAML file to use as the automaton definition
+  -h, --help        show this help message and exit
+  -f, --yaml INPUT  The YAML file to use as the automaton definition
+  -d, --debug       Print debug messages, which includes transitions (default:
+                    False)
 ```
